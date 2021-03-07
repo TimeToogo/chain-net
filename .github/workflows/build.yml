@@ -48,4 +48,4 @@ jobs:
         with:
           name: binaries
           path: |
-            target/release/layer2_forwarder
+            target/${{ matrix.target }}/release/layer2_forwarder
