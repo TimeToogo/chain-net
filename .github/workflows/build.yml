@@ -49,3 +49,13 @@ jobs:
           name: layer2-forwarder-${{ matrix.target }}
           path: |
             target/${{ matrix.target }}/release/layer2_forwarder
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: ${{ matrix.target }}-${{ github.sha }}
+          prerelease: true
+          files: |
+            target/${{ matrix.target }}/release/layer2_forwarder
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
