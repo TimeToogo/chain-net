@@ -39,6 +39,11 @@ pub fn process_packet(
         return;
     }
 
+    if source_mac == interface.mac.unwrap() {
+        log::trace!("packet is sent from interface, ignoring");
+        return;
+    }
+
     log::trace!(
         "received packet from {} destined for {} in lan",
         source_mac,
