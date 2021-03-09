@@ -1,4 +1,4 @@
-use std::{net::{IpAddr, Ipv4Addr}, sync::mpsc::Sender, thread, time::Duration};
+use std::{net::{IpAddr, Ipv4Addr}, sync::mpsc::Sender, thread, time::{Duration, SystemTime}};
 
 use pnet::packet::arp::{ArpOperations, ArpPacket, MutableArpPacket, ArpHardwareTypes};
 use pnet::{
@@ -16,10 +16,10 @@ pub fn send_requests(state: SharedState, interface: NetworkInterface, mut tx: Se
     loop {
         // Get clients without mac addr
         let clients = state
-            .inner_clone()
-            .clients
+            .get(|s| s.clients.clone())
             .into_iter()
             .filter(|i| i.mac.is_none())
+            .filter(|i| SystemTime::now().duration_since(i.created).map_or(false, |d| d.as_secs() < 10))
             .collect::<Vec<_>>();
 
         for client in clients {

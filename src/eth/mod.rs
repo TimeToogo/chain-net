@@ -1,10 +1,12 @@
-mod event;
 mod arp;
+mod event;
+mod ip_forwarder;
 
-use std::{sync::mpsc, thread, time::Duration};
+use std::{sync::mpsc::{self, Sender}, thread, time::Duration};
 
 use anyhow::anyhow;
 use anyhow::{bail, Result};
+use datalink::NetworkInterface;
 use event::Event;
 use pnet::datalink::{self, Channel, DataLinkReceiver};
 use pnet::packet::ethernet::{EtherTypes, EthernetPacket};
@@ -30,15 +32,17 @@ pub fn start(args: Args, mut state: SharedState) -> Result<()> {
         Err(err) => bail!("Error while creating raw socket: {}", err),
     };
 
-    let (tx, rx) = mpsc::channel::<Event>();
+    let (mut tx, rx) = mpsc::channel::<Event>();
 
-    spawn(&tx, &state, move |tx, _| receive_packets(drx, tx));
-    spawn(&tx, &state, |tx, state| terminate_if_stopped(state, tx));
-    spawn(&tx, &state, move |tx, state| arp::send_requests(state, interface.clone(), tx));
+    spawn(&tx, &state, &interface, move |tx, _, _| receive_packets(drx, tx));
+    spawn(&tx, &state, &interface, |tx, state, _| terminate_if_stopped(state, tx));
+    spawn(&tx, &state, &interface, |tx, state, interface| {
+        arp::send_requests(state, interface, tx)
+    });
 
     loop {
         match rx.recv()? {
-            Event::PacketReceived(packet) => process_packet(&mut state, packet),
+            Event::PacketReceived(packet) => process_packet(&mut tx, &mut state, packet, &interface),
             Event::SendPacket(packet) => send_packet(&mut dtx, packet),
             Event::Terminate(res) => break res?,
         }
@@ -49,14 +53,15 @@ pub fn start(args: Args, mut state: SharedState) -> Result<()> {
     Ok(())
 }
 
-fn spawn<F>(tx: &mpsc::Sender<Event>, state: &SharedState, f: F)
+fn spawn<F>(tx: &mpsc::Sender<Event>, state: &SharedState, interface: &NetworkInterface, f: F)
 where
-    F: FnOnce(mpsc::Sender<Event>, SharedState) -> () + Send + 'static,
+    F: FnOnce(mpsc::Sender<Event>, SharedState, NetworkInterface) -> () + Send + 'static,
 {
     let tx = tx.clone();
     let state = state.clone();
+    let interface = interface.clone();
 
-    thread::spawn(move || f(tx, state));
+    thread::spawn(move || f(tx, state, interface));
 }
 
 fn send_packet(dtx: &mut Box<dyn DataLinkSender>, packet: EthernetPacket) {
@@ -90,9 +95,10 @@ fn receive_packets(mut drx: Box<dyn DataLinkReceiver>, tx: mpsc::Sender<Event>) 
     }
 }
 
-fn process_packet(state: &mut SharedState, packet: EthernetPacket) {
+fn process_packet(tx: &mut Sender<Event>, state: &mut SharedState, packet: EthernetPacket, interface: &NetworkInterface) {
     match packet.get_ethertype() {
         EtherTypes::Arp => arp::process_packet(state, packet),
+        EtherTypes::Ipv4 => ip_forwarder::process_packet(tx, state, packet, interface),
         _ => {}
     }
 }

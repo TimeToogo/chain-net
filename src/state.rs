@@ -1,9 +1,11 @@
 use std::{
+    env,
     net::Ipv4Addr,
     sync::{
         atomic::{AtomicBool, Ordering},
         Arc, Mutex,
     },
+    time::SystemTime,
 };
 
 use pnet::util::MacAddr;
@@ -14,15 +16,17 @@ pub struct SharedState {
     state: Arc<Mutex<State>>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Client {
     pub name: String,
     pub ip: Ipv4Addr,
     pub mac: Option<MacAddr>,
+    pub created: SystemTime,
 }
 
 #[derive(Clone, Debug)]
 pub struct State {
+    pub on: bool,
     pub clients: Vec<Client>,
 }
 
@@ -43,10 +47,13 @@ impl SharedState {
         f(&mut *state);
     }
 
-    pub fn inner_clone(&self) -> State {
+    pub fn get<F, R>(&self, f: F) -> R
+    where
+        F: FnOnce(&State) -> R,
+    {
         let state = self.state.lock().unwrap();
 
-        (*state).clone()
+        f(&*state)
     }
 
     pub fn term_arc(&self) -> Arc<AtomicBool> {
@@ -61,6 +68,7 @@ impl SharedState {
 impl State {
     fn new() -> Self {
         Self {
+            on: env::var("FORWARDER_ON").map(|_| true).unwrap_or(false),
             clients: Vec::new(),
         }
     }
