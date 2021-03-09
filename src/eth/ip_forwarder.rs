@@ -83,10 +83,10 @@ pub fn process_packet(
     let (source_client, dest_client, next_hop_client) = clients.unwrap();
 
     log::debug!(
-        "forwarding packet from {:?} to {:?} via next hop {:?}",
-        source_client,
-        dest_client,
-        next_hop_client
+        "forwarding packet from {} to {} via next hop {}",
+        source_client.name,
+        dest_client.name,
+        next_hop_client.name
     );
     send_packet_to_next_hop(tx, next_hop_client, interface, eth);
 }
