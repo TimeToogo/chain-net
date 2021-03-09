@@ -33,13 +33,13 @@ pub fn process_packet(tx: &mut Sender<Event>, state: &mut SharedState, eth: Ethe
         return;
     }
 
-    log::debug!("received packet from {} destined for {} in lan", source_mac, dest_ip);
+    log::trace!("received packet from {} destined for {} in lan", source_mac, dest_ip);
 
     let clients = state.get(|state| {
         let source_client = state.clients.iter().find(|i| i.mac == Some(source_mac));
         
         if source_client.is_none() {
-            log::debug!("could not find client with mac {}", source_mac);
+            log::trace!("could not find client with mac {}", source_mac);
             return None;
         }
 
