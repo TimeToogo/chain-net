@@ -39,6 +39,11 @@ pub fn process_packet(
         return;
     }
 
+    if interface.ips.iter().any(|i| i.ip() == IpAddr::V4(dest_ip)) {
+        log::trace!("packet dest is local interface, ignoring");
+        return;
+    }
+
     if source_mac == interface.mac.unwrap() {
         log::trace!("packet is sent from interface, ignoring");
         return;

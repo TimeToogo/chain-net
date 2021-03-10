@@ -1,18 +1,19 @@
-use std::{net::{IpAddr, Ipv4Addr, SocketAddr}, time::{Instant, SystemTime}};
+use std::{
+    net::{IpAddr, Ipv4Addr, SocketAddr},
+    time::SystemTime,
+};
 
 use serde::{Deserialize, Serialize};
-use warp::{Filter, Reply, filters::BoxedFilter, hyper::StatusCode};
+use warp::{filters::BoxedFilter, hyper::StatusCode, Filter, Reply};
 
-use crate::{
-    state::{Client, SharedState},
-};
+use crate::state::{Client, SharedState};
 
 #[derive(Serialize)]
 struct ClientResponse {
     name: String,
     ip: String,
     mac: Option<String>,
-    created: SystemTime
+    created: SystemTime,
 }
 
 #[derive(Deserialize)]
@@ -26,7 +27,7 @@ impl From<&Client> for ClientResponse {
             name: c.name.clone(),
             ip: c.ip.to_string(),
             mac: c.mac.map(|i| i.to_string()),
-            created: c.created
+            created: c.created,
         }
     }
 }
@@ -85,7 +86,7 @@ fn upsert_client(state: &SharedState, n: NewClient, ip: Ipv4Addr) {
                 name: n.name.clone(),
                 ip,
                 mac: None,
-                created: SystemTime::now()
+                created: SystemTime::now(),
             };
             log::info!("added client {:?}", client);
             state.clients.push(client);
