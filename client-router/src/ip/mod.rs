@@ -1,6 +1,6 @@
-mod arp;
 mod event;
 mod ip_forwarder;
+mod dumper;
 
 use std::{sync::mpsc::{self, Sender}, thread, time::Duration};
 
@@ -36,19 +36,16 @@ pub fn start(args: Args, mut state: SharedState) -> Result<()> {
 
     spawn(&tx, &state, &interface, move |tx, _, _| receive_packets(drx, tx));
     spawn(&tx, &state, &interface, |tx, state, _| terminate_if_stopped(state, tx));
-    spawn(&tx, &state, &interface, |tx, state, interface| {
-        arp::send_requests(state, interface, tx)
-    });
 
     loop {
         match rx.recv()? {
-            Event::PacketReceived(packet) => process_packet(&mut tx, &mut state, packet, &interface),
+            Event::PacketReceived(packet) => process_packet(&args, &mut tx, &mut state, packet, &interface),
             Event::SendPacket(packet) => send_packet(&mut dtx, packet),
             Event::Terminate(res) => break res?,
         }
     }
 
-    log::info!("ethernet fowarder shutting down");
+    log::info!("packet fowarder shutting down");
 
     Ok(())
 }
@@ -95,10 +92,9 @@ fn receive_packets(mut drx: Box<dyn DataLinkReceiver>, tx: mpsc::Sender<Event>) 
     }
 }
 
-fn process_packet(tx: &mut Sender<Event>, state: &mut SharedState, packet: EthernetPacket, interface: &NetworkInterface) {
+fn process_packet(args: &Args, tx: &mut Sender<Event>, _state: &mut SharedState, packet: EthernetPacket, interface: &NetworkInterface) {
     match packet.get_ethertype() {
-        EtherTypes::Arp => arp::process_packet(state, packet),
-        EtherTypes::Ipv4 => ip_forwarder::process_packet(tx, state, packet, interface),
+        EtherTypes::Ipv4 => ip_forwarder::process_packet(args, tx, packet, interface),
         _ => {}
     }
 }
