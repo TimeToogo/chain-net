@@ -71,7 +71,7 @@ fn is_in_local_net(dest_ip: Ipv4Addr, interface: &NetworkInterface) -> bool {
         // Some hackery if the subnet mask is set at /32 we
         // pretend it's /24
         // Having a /32 subnet mask on the central router stops
-        // clients from routing the packets at L2 which can make
+        // nodes from routing the packets at L2 which can make
         // it for the central router to modify the routing of those packets.
         .map(|i| {
             if i.prefix() == 32 {

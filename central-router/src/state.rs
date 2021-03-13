@@ -17,7 +17,7 @@ pub struct SharedState {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Client {
+pub struct Node {
     pub name: String,
     pub ip: Ipv4Addr,
     pub mac: Option<MacAddr>,
@@ -27,7 +27,7 @@ pub struct Client {
 #[derive(Clone, Debug)]
 pub struct State {
     pub on: bool,
-    pub clients: Vec<Client>,
+    pub nodes: Vec<Node>,
 }
 
 impl SharedState {
@@ -69,7 +69,7 @@ impl State {
     fn new() -> Self {
         Self {
             on: env::var("FORWARDER_ON").map(|_| true).unwrap_or(false),
-            clients: Vec::new(),
+            nodes: Vec::new(),
         }
     }
 }

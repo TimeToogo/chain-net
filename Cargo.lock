@@ -104,7 +104,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "chainnet-client-router"
+name = "chainnet-node-router"
 version = "0.1.0"
 dependencies = [
  "anyhow",

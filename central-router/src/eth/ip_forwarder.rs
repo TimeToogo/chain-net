@@ -9,7 +9,7 @@ use pnet::{
     packet::ethernet::{EthernetPacket, MutableEthernetPacket},
     packet::Packet,
 };
-use state::{Client, State};
+use state::{Node, State};
 
 use crate::state::{self, SharedState};
 
@@ -55,45 +55,45 @@ pub fn process_packet(
         dest_ip
     );
 
-    let clients = state.get(|state| {
-        let source_client = state.clients.iter().find(|i| i.mac == Some(source_mac));
+    let nodes = state.get(|state| {
+        let source_node = state.nodes.iter().find(|i| i.mac == Some(source_mac));
 
-        if source_client.is_none() {
-            log::trace!("could not find client with mac {}", source_mac);
+        if source_node.is_none() {
+            log::trace!("could not find node with mac {}", source_mac);
             return None;
         }
 
-        let dest_client = state.clients.iter().find(|i| i.ip == dest_ip);
+        let dest_node = state.nodes.iter().find(|i| i.ip == dest_ip);
 
-        if dest_client.is_none() {
-            log::debug!("could not find dest client with ip {}", dest_ip);
+        if dest_node.is_none() {
+            log::debug!("could not find dest node with ip {}", dest_ip);
             return None;
         }
 
-        let source_client = source_client.unwrap();
-        let dest_client = dest_client.unwrap();
-        let next_hop_client = find_next_hop_client(state, source_client, dest_client);
+        let source_node = source_node.unwrap();
+        let dest_node = dest_node.unwrap();
+        let next_hop_node = find_next_hop_node(state, source_node, dest_node);
 
         Some((
-            source_client.clone(),
-            dest_client.clone(),
-            next_hop_client.clone(),
+            source_node.clone(),
+            dest_node.clone(),
+            next_hop_node.clone(),
         ))
     });
 
-    if clients.is_none() {
+    if nodes.is_none() {
         return;
     }
 
-    let (source_client, dest_client, next_hop_client) = clients.unwrap();
+    let (source_node, dest_node, next_hop_node) = nodes.unwrap();
 
     log::debug!(
         "forwarding packet from {} to {} via next hop {}",
-        source_client.name,
-        dest_client.name,
-        next_hop_client.name
+        source_node.name,
+        dest_node.name,
+        next_hop_node.name
     );
-    send_packet_to_next_hop(tx, next_hop_client, interface, eth);
+    send_packet_to_next_hop(tx, next_hop_node, interface, eth);
 }
 
 fn is_in_local_net(dest_ip: Ipv4Addr, interface: &NetworkInterface) -> bool {
@@ -103,25 +103,25 @@ fn is_in_local_net(dest_ip: Ipv4Addr, interface: &NetworkInterface) -> bool {
         .any(|i| i.contains(IpAddr::V4(dest_ip)))
 }
 
-/// Returns the next client along the chain.
-/// This will return a client which is one stop closer to the destination along the chain.
-/// The chain is defined by the order at which the appear in the Vec<Client>
-fn find_next_hop_client<'a>(
+/// Returns the next node along the chain.
+/// This will return a node which is one stop closer to the destination along the chain.
+/// The chain is defined by the order at which the appear in the Vec<Node>
+fn find_next_hop_node<'a>(
     state: &'a State,
-    source_client: &'a state::Client,
-    dest_client: &'a state::Client,
-) -> &'a Client {
-    if source_client == dest_client {
-        log::debug!("source client is equal to dest client, looping back");
-        return dest_client;
+    source_node: &'a state::Node,
+    dest_node: &'a state::Node,
+) -> &'a Node {
+    if source_node == dest_node {
+        log::debug!("source node is equal to dest node, looping back");
+        return dest_node;
     }
 
     let source_index = state
-        .clients
+        .nodes
         .iter()
-        .position(|c| c == source_client)
+        .position(|c| c == source_node)
         .unwrap();
-    let dest_index = state.clients.iter().position(|c| c == dest_client).unwrap();
+    let dest_index = state.nodes.iter().position(|c| c == dest_node).unwrap();
 
     let next_hop_index = if source_index < dest_index {
         source_index + 1
@@ -129,12 +129,12 @@ fn find_next_hop_client<'a>(
         source_index - 1
     };
 
-    return &state.clients[next_hop_index];
+    return &state.nodes[next_hop_index];
 }
 
 fn send_packet_to_next_hop(
     tx: &mut Sender<Event>,
-    next_hop: Client,
+    next_hop: Node,
     interface: &NetworkInterface,
     eth: EthernetPacket,
 ) {

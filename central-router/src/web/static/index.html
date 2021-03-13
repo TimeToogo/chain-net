@@ -1,0 +1,49 @@
+<html>
+    <head>
+        <title>Chain-net UIs</title>
+        <link rel="stylesheet" href="style.css" />
+    </head>
+    <body>
+        <header>
+            <h1>Chain-Net</h1>
+            <p class="info">
+                Packets addressed to one of the nodes in the below list will be routed,
+                from the source node, hopping along each adjacent node towards it's destination
+                until it arrives.
+            </p>
+            <p>Below is a list of all the nodes connected to the network</p>
+        </header>
+        <main>
+            <section class="status">
+                <button></button>
+            </section>
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Node</th>
+                        <th>MAC Address</th>
+                        <th>IP Address</th>
+                        <th>Joined</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+                <tfoot class="register">
+                    <tr>
+                        <td colspan="100">
+                            <button>Connect</button>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+            <p class="refreshed">
+                Last refreshed <span></span>
+            </p>
+        </main>
+        <footer>
+            Made with &hearts;
+        </footer>
+        <script src="app.js"></script>
+    </body>
+</html>

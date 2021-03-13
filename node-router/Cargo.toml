@@ -1,5 +1,5 @@
 [package]
-name = "chainnet-client-router"
+name = "chainnet-node-router"
 version = "0.1.0"
 authors = ["Elliot Levin <elliot.levin@cheproximity.com.au>"]
 edition = "2018"

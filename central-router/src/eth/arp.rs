@@ -14,17 +14,17 @@ use super::event::Event;
 
 pub fn send_requests(state: SharedState, interface: NetworkInterface, mut tx: Sender<Event>) {
     loop {
-        // Get clients without mac addr
-        let clients = state
-            .get(|s| s.clients.clone())
+        // Get nodes without mac addr
+        let nodes = state
+            .get(|s| s.nodes.clone())
             .into_iter()
             .filter(|i| i.mac.is_none())
             .filter(|i| SystemTime::now().duration_since(i.created).map_or(false, |d| d.as_secs() < 10))
             .collect::<Vec<_>>();
 
-        for client in clients {
-            log::info!("sending arp request for ip {}", client.ip.to_string());
-            send_arp_request(&interface, client.ip, &mut tx);
+        for node in nodes {
+            log::info!("sending arp request for ip {}", node.ip.to_string());
+            send_arp_request(&interface, node.ip, &mut tx);
         }
 
         thread::sleep(Duration::from_millis(1000));
@@ -86,14 +86,14 @@ pub fn process_packet(state: &mut SharedState, eth: EthernetPacket) {
     log::info!("received arp response for ip {} with mac {}", sender_ip, sender_mac);
     
     state.update(|state| {
-        let client = state.clients.iter_mut()
+        let node = state.nodes.iter_mut()
             .find(|i| i.ip == sender_ip);
 
-        if client.is_none() {
-            log::warn!("could not find client with ip {}", sender_ip);
+        if node.is_none() {
+            log::warn!("could not find node with ip {}", sender_ip);
             return;
         }
 
-        client.unwrap().mac = Some(sender_mac);
+        node.unwrap().mac = Some(sender_mac);
     });
 }

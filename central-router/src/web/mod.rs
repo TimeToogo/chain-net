@@ -1,5 +1,6 @@
-mod clients;
+mod nodes;
 mod status;
+mod ui;
 
 use std::time::Duration;
 
@@ -27,10 +28,14 @@ async fn start_warp(args: Args, state: SharedState) -> Result<()> {
     let api_status = warp::path!("api" / "status")
         .and(status::get(state.clone()).or(status::post(state.clone())));
 
-    let api_clients = warp::path!("api" / "clients")
-        .and(clients::get(state.clone()).or(clients::post(state.clone())));
+    let api_nodes = warp::path!("api" / "nodes").and(
+        nodes::get(state.clone())
+            .or(nodes::post(state.clone()))
+            .or(nodes::put(state.clone()))
+            .or(nodes::delete(state.clone())),
+    );
 
-    warp::serve(api_status.or(api_clients))
+    warp::serve(api_status.or(api_nodes).or(ui::get()))
         .run(([0, 0, 0, 0], args.port))
         .await;
 
