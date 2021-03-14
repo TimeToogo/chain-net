@@ -47,7 +47,7 @@ jobs:
       
       - name: Deploy to S3
         run: |
-          aws s3 cp --acl=public-read --cache-control max-age=7200 --metadata-directive REPLACE target/${{ matrix.target }}/release/chainnet-central-router s3://chainnet/central-router-${{ matrix.target }} \
-          && aws s3 cp --acl=public-read --cache-control max-age=7200 --metadata-directive REPLACE target/${{ matrix.target }}/release/chainnet-node-router s3://chainnet/node-router-${{ matrix.target }} 
+          aws s3 cp --acl=public-read --cache-control max-age=7200 --metadata-directive REPLACE target/release/chainnet-central-router s3://chainnet/central-router-${{ matrix.target }} \
+          && aws s3 cp --acl=public-read --cache-control max-age=7200 --metadata-directive REPLACE target/release/chainnet-node-router s3://chainnet/node-router-${{ matrix.target }} 
         shell: bash
     
