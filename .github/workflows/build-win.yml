@@ -23,7 +23,7 @@ jobs:
           choco install winpcap
           curl https://www.winpcap.org/install/bin/WpdPack_4_1_2.zip -o dev_winpcap.zip
           unzip dev_winpcap.zip
-          cp -arv WpdPack/Lib/x64/* /c/windows/system32/
+          cp -rv WpdPack/Lib/x64/* /c/Rust/.rustup/toolchains/stable-x86_64-pc-windows-msvc/lib/rustlib/x86_64-pc-windows-msvc/lib/
         shell: bash
       - uses: actions-rs/cargo@v1
         with:
