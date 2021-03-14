@@ -13,21 +13,22 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v2
-      - name: Install WinPcap
-        run: |
-          choco install winpcap
-          curl https://www.winpcap.org/install/bin/WpdPack_4_1_2.zip -o dev_winpcap.zip
-          unzip dev_winpcap.zip
-          echo "PATH=\"$PATH:$PWD/WpdPack/Lib/x64/\"" >> $GITHUB_ENV
-        shell: bash
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           target: ${{ matrix.target }}
           override: true
+      - name: Install WinPcap
+        run: |
+          choco install winpcap
+          curl https://www.winpcap.org/install/bin/WpdPack_4_1_2.zip -o dev_winpcap.zip
+          unzip dev_winpcap.zip
+          echo "$PWD/WpdPack/Lib/x64/" >> $GITHUB_PATH
+          mkdir lib
+          cp -ar WpdPack/Lib/x84/* lib/
+        shell: bash
       - uses: actions-rs/cargo@v1
         with:
-          use-cross: true
           command: build
           args: --release --target=${{ matrix.target }}
 
