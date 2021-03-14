@@ -1,6 +1,6 @@
-on: [push, pull_request]
+on: [push]
 
-name: Build
+name: Build - Windows
 
 jobs:
   build:
@@ -20,6 +20,7 @@ jobs:
           override: true
       - name: Install WinPcap
         run: |
+          echo $PATH
           choco install winpcap
           curl https://www.winpcap.org/install/bin/WpdPack_4_1_2.zip -o dev_winpcap.zip
           unzip dev_winpcap.zip
