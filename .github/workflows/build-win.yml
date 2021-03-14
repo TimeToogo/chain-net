@@ -20,15 +20,10 @@ jobs:
           override: true
       - name: Install WinPcap
         run: |
-          echo $PATH
           choco install winpcap
           curl https://www.winpcap.org/install/bin/WpdPack_4_1_2.zip -o dev_winpcap.zip
           unzip dev_winpcap.zip
-          echo "$PWD/WpdPack/Lib/x64/" >> $GITHUB_PATH
-          mkdir central-router/lib
-          mkdir node-router/lib
-          cp -ar WpdPack/Lib/x64/* central-router/lib/
-          cp -ar WpdPack/Lib/x64/* node-router/lib/
+          cp -arv WpdPack/Lib/x64/* /c/windows/system32/
         shell: bash
       - uses: actions-rs/cargo@v1
         with:
