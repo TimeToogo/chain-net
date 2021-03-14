@@ -1,7 +1,6 @@
-use warp::{filters::BoxedFilter, Filter, Reply};
+use warp::{Filter, Reply, filters::BoxedFilter, hyper::Response, path};
 
-// #[cfg(not(dev))]
-#[cfg(dev)]
+#[cfg(not(dev))]
 pub fn get() -> BoxedFilter<(impl Reply,)> {
     let index = include_str!("static/index.html");
     let css = include_str!("static/style.css");
@@ -29,7 +28,7 @@ pub fn get() -> BoxedFilter<(impl Reply,)> {
         .boxed()
 }
 
-// #[cfg(dev)]
+#[cfg(dev)]
 pub fn get() -> BoxedFilter<(impl Reply,)> {
     warp::fs::dir("central-router/src/web/static").boxed()
 }

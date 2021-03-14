@@ -1,0 +1,161 @@
+html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: 'Avenir Next', 'Avenir', sans-serif;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    background: #f6f6f6;
+    color: #333;
+}
+
+p, h1, h2, h3, h4, h5, h6 {
+    margin: 0;
+    padding: 0;
+}
+
+p {
+    color: #888;
+    font-size: 16px;
+}
+
+.container {
+    width: 1000px;
+    max-width: calc(100% - 20px);
+    margin: 0 auto;
+}
+
+header {
+    padding: 20px 0;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+header .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+header h1 {
+    font-weight: normal;
+    margin-bottom: 20px;
+    font-size: 36px;
+}
+
+header p {
+    max-width: 630px;
+}
+
+main .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+}
+
+main .status {
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+main .status button {
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+main .status.on button {
+    color: #0096008f;
+}
+
+main .status.off button {
+    color: #ff000096;
+}
+
+main .nodes {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+main .nodes p {
+    margin-bottom: 10px;
+    font-size: 12px;
+}
+
+main .nodes table {
+    width: 100%;
+    text-align: left;
+    margin: 50px 0;
+}
+
+main .nodes table tr > * {
+    padding: 10px 20px 5px 20px;
+    margin: 0;
+}
+
+main .nodes table th {
+    font-weight: lighter;
+    color: #000;
+}
+
+main .nodes table tbody td {
+    border-bottom: 1px solid #ccc;
+}
+
+main .nodes table tbody tr td:first-child {
+    font-weight: 600;
+}
+
+main .nodes table tbody tr td:last-child {
+    text-align: right;
+    border: none;
+}
+
+main .nodes table button {
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+main .nodes table tr.none > td:first-child {
+    font-weight: 100;
+    text-align: center;
+    font-size: 12px;
+    border: none;
+}
+
+main .nodes table tfoot td {
+    padding: 20px 0;
+    text-align: center;
+}
+
+main .nodes table tfoot.registered button {
+    color: #888;
+    font-weight: 100;
+}
+
+main .nodes table tfoot:not(.registered) button {
+    color: #333;
+    font-weight: 600;
+    text-decoration: underline;
+}
+
+main .refreshed {
+    font-size: 12px;
+}
+
+footer {
+    margin-top: 50px;
+}
+
+footer .container {
+    text-align: center;
+    color: #999;
+}

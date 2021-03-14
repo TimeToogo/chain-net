@@ -118,14 +118,14 @@ const renderNodes = () => {
     .map(
       (n, i) => `<tr class="${n.you ? "you" : ""}">
             <td>${i + 1}</td>
-            <td>${escapeHtml(n.name)}</td>
-            <td>${n.mac}</td>
+            <td>${escapeHtml(n.name.substring(0, 20))}</td>
+            <td>${n.mac || 'N/A'}</td>
             <td>${n.ip}</td>
             <td>${new Date(n.created.secs_since_epoch * 1000).toISOString()}</td>
             <td>
                 <button class="up">&uarr;</button>
                 <button class="down">&darr;</button>
-            <td>
+            </td>
         </tr>`
     )
     .join(`\n`);
@@ -143,8 +143,8 @@ const renderNodes = () => {
 
 
 const renderStatus = () => {
-  e.status.container.classList.toggle("on", e.status);
-  e.status.container.classList.toggle("off", !e.status);
+  e.status.container.classList.toggle("on", s.status);
+  e.status.container.classList.toggle("off", !s.status);
   e.status.button.innerText = `Status: ${s.status ? "ON" : "OFF"}`;
 };
 
