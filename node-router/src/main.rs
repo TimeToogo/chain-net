@@ -4,14 +4,16 @@ pub mod state;
 
 use std::{process, thread};
 
+use anyhow::{anyhow, Result};
 use args::Args;
 use clap::Clap;
 use state::SharedState;
 use thread::JoinHandle;
-use anyhow::{Result, anyhow};
 
 fn main() {
-    env_logger::init_from_env(env_logger::Env::default().filter_or(env_logger::DEFAULT_FILTER_ENV, "info"));
+    env_logger::init_from_env(
+        env_logger::Env::default().filter_or(env_logger::DEFAULT_FILTER_ENV, "info"),
+    );
 
     let args = Args::parse();
 
@@ -19,13 +21,11 @@ fn main() {
 
     log::info!("starting up");
 
-    for sig in &[libc::SIGINT, libc::SIGTERM, libc::SIGQUIT] {
+    for sig in signals().iter().filter(|i| **i > 0) {
         signal_hook::flag::register(*sig, state.term_arc()).expect("failed to set signal handler");
     }
 
-    let threads = vec![
-        spawn(&args, &state, ip::start),
-    ];
+    let threads = vec![spawn(&args, &state, ip::start)];
 
     let error = threads
         .into_iter()
@@ -43,8 +43,19 @@ fn main() {
     process::exit(error.is_some() as _);
 }
 
-fn spawn<F>(args: &Args, state: &SharedState, f: F) -> JoinHandle<Result<()>> 
-    where F : FnOnce(Args, SharedState) -> Result<()> + Send + 'static
+#[cfg(unix)]
+fn signals() -> [i32; 3] {
+    [libc::SIGINT, libc::SIGTERM, libc::SIGQUIT]
+}
+
+#[cfg(windows)]
+fn signals() -> [i32; 3] {
+    [libc::SIGINT, libc::SIGTERM, 0]
+}
+
+fn spawn<F>(args: &Args, state: &SharedState, f: F) -> JoinHandle<Result<()>>
+where
+    F: FnOnce(Args, SharedState) -> Result<()> + Send + 'static,
 {
     let args = args.clone();
     let state = state.clone();

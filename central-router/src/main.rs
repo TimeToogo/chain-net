@@ -20,7 +20,7 @@ fn main() {
 
     log::info!("starting up");
 
-    for sig in &[libc::SIGINT, libc::SIGTERM, libc::SIGQUIT] {
+    for sig in signals().iter().filter(|i| **i > 0) {
         signal_hook::flag::register(*sig, state.term_arc()).expect("failed to set signal handler");
     }
 
@@ -43,6 +43,16 @@ fn main() {
     log::info!("shutdown");
 
     process::exit(error.is_some() as _);
+}
+
+#[cfg(unix)]
+fn signals() -> [i32; 3] {
+    [libc::SIGINT, libc::SIGTERM, libc::SIGQUIT]
+}
+
+#[cfg(windows)]
+fn signals() -> [i32; 3] {
+    [libc::SIGINT, libc::SIGTERM, 0]
 }
 
 fn spawn<F>(args: &Args, state: &SharedState, f: F) -> JoinHandle<Result<()>> 
