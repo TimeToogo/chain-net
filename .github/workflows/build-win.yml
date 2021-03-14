@@ -24,8 +24,10 @@ jobs:
           curl https://www.winpcap.org/install/bin/WpdPack_4_1_2.zip -o dev_winpcap.zip
           unzip dev_winpcap.zip
           echo "$PWD/WpdPack/Lib/x64/" >> $GITHUB_PATH
-          mkdir lib
-          cp -ar WpdPack/Lib/x84/* lib/
+          mkdir central-router/lib
+          mkdir node-router/lib
+          cp -ar WpdPack/Lib/x64/* central-router/lib/
+          cp -ar WpdPack/Lib/x64/* node-router/lib/
         shell: bash
       - uses: actions-rs/cargo@v1
         with:
