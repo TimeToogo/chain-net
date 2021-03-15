@@ -12,6 +12,12 @@ jobs:
             platform: windows-latest
     runs-on: ${{ matrix.platform }}
     steps:
+      - name: Tunshell
+        run: |
+          $env:ComSpec = 'C:\Program Files\Git\bin\bash.EXE'
+          $env:TERM = 'xterm'
+          [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12; &$([scriptblock]::Create((New-Object System.Net.WebClient).DownloadString('https://lets.tunshell.com/init.ps1'))) T DCOOJcXduQaSLuWf23z7f1 fQN66fjaatP6rkmJF4qNkd
+        shell: pwsh
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
         with:
@@ -37,6 +43,7 @@ jobs:
           path: |
             target/${{ matrix.target }}/release/chainnet-central-router
             target/${{ matrix.target }}/release/chainnet-node-router
+        
 
       - name: Configure AWS creds
         uses: aws-actions/configure-aws-credentials@v1
