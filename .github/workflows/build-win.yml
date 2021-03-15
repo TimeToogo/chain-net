@@ -30,16 +30,14 @@ jobs:
           command: build
           args: --release --target=${{ matrix.target }}
 
-      - run: tree /f
-
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
           name: layer2-forwarder-${{ matrix.target }}
           path: |
-            target/release/chainnet-central-router
-            target/release/chainnet-node-router
-        
+            target/${{ matrix.target }}/release/chainnet-central-router.exe
+            target/${{ matrix.target }}/release/chainnet-node-router.exe
+
       - name: Configure AWS creds
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -49,7 +47,7 @@ jobs:
       
       - name: Deploy to S3
         run: |
-          aws s3 cp --acl=public-read --cache-control max-age=7200 --metadata-directive REPLACE target/release/chainnet-central-router s3://chainnet/central-router-${{ matrix.target }} \
-          && aws s3 cp --acl=public-read --cache-control max-age=7200 --metadata-directive REPLACE target/release/chainnet-node-router s3://chainnet/node-router-${{ matrix.target }} 
+          aws s3 cp --acl=public-read --cache-control max-age=7200 --metadata-directive REPLACE target/${{ matrix.target }}/release/chainnet-central-router.exe s3://chainnet/central-router-${{ matrix.target }}.exe \
+          && aws s3 cp --acl=public-read --cache-control max-age=7200 --metadata-directive REPLACE target/${{ matrix.target }}/release/chainnet-node-router.exe s3://chainnet/node-router-${{ matrix.target }}.exe
         shell: bash
     
