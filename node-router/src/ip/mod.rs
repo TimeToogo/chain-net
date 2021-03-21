@@ -1,8 +1,12 @@
+mod dumper;
 mod event;
 mod ip_forwarder;
-mod dumper;
 
-use std::{sync::mpsc::{self, Sender}, thread, time::Duration};
+use std::{
+    sync::mpsc::{self, Sender},
+    thread,
+    time::Duration,
+};
 
 use anyhow::anyhow;
 use anyhow::{bail, Result};
@@ -23,7 +27,14 @@ pub fn start(args: Args, mut state: SharedState) -> Result<()> {
     let interface = datalink::interfaces()
         .into_iter()
         .map(|i| {
-            log::trace!("found interface {} [{}]", i.name, i.mac.map(|i| i.to_string()).unwrap_or("mac unknown".to_string()));
+            log::debug!(
+                "found interface {} [{}] [{}]",
+                i.name,
+                i.description,
+                i.mac
+                    .map(|i| i.to_string())
+                    .unwrap_or("mac unknown".to_string())
+            );
             i
         })
         .filter(|i| i.name == args.interface)
@@ -38,12 +49,18 @@ pub fn start(args: Args, mut state: SharedState) -> Result<()> {
 
     let (mut tx, rx) = mpsc::channel::<Event>();
 
-    spawn(&tx, &state, &interface, move |tx, _, _| receive_packets(drx, tx));
-    spawn(&tx, &state, &interface, |tx, state, _| terminate_if_stopped(state, tx));
+    spawn(&tx, &state, &interface, move |tx, _, _| {
+        receive_packets(drx, tx)
+    });
+    spawn(&tx, &state, &interface, |tx, state, _| {
+        terminate_if_stopped(state, tx)
+    });
 
     loop {
         match rx.recv()? {
-            Event::PacketReceived(packet) => process_packet(&args, &mut tx, &mut state, packet, &interface),
+            Event::PacketReceived(packet) => {
+                process_packet(&args, &mut tx, &mut state, packet, &interface)
+            }
             Event::SendPacket(packet) => send_packet(&mut dtx, packet),
             Event::Terminate(res) => break res?,
         }
@@ -96,7 +113,13 @@ fn receive_packets(mut drx: Box<dyn DataLinkReceiver>, tx: mpsc::Sender<Event>) 
     }
 }
 
-fn process_packet(args: &Args, tx: &mut Sender<Event>, _state: &mut SharedState, packet: EthernetPacket, interface: &NetworkInterface) {
+fn process_packet(
+    args: &Args,
+    tx: &mut Sender<Event>,
+    _state: &mut SharedState,
+    packet: EthernetPacket,
+    interface: &NetworkInterface,
+) {
     match packet.get_ethertype() {
         EtherTypes::Ipv4 => ip_forwarder::process_packet(args, tx, packet, interface),
         _ => {}
