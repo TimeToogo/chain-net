@@ -22,6 +22,10 @@ pub fn start(args: Args, mut state: SharedState) -> Result<()> {
 
     let interface = datalink::interfaces()
         .into_iter()
+        .map(|i| {
+            log::trace!("found interface {} [{}]", i.name, i.mac.map(|i| i.to_string()).unwrap_or("mac unknown".to_string()));
+            i
+        })
         .filter(|i| i.name == args.interface)
         .next()
         .ok_or(anyhow!("could not find interface named {}", args.interface))?;
